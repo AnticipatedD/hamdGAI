@@ -5,7 +5,9 @@
 ![How hamdGAI agents work](how-hamdGAI-agents-work-1920x1080-1.jpg.webp)
 
 An AI agent is an engineered loop, not just a smart model.  
-`hamdGAI` implements the five core parts described in the Unite.AI reference architecture:
+`hamdGAI` implements the five core parts described in the Unite. 
+
+## AI reference architecture:
 
 1. **Model** – interprets the objective and proposes the next action  
 2. **Instructions** – role, boundaries, policies, stopping criteria  
