@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  hamdgai-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hamdgai-core-service
+    ports:
+      - "8000:8000"
+    
+    # Load parameters securely from the target configuration profile
+    env_file:
+      - .env
+      
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Overrides or fallback values if missing in your local .env configuration file
+      - ROCM_ENGINE_URL=${ROCM_ENGINE_URL:-http://localhost:8000/v1}
+      - ROCM_API_KEY=${ROCM_API_KEY:-not-needed}
+      
+    # Mount execution space as a dynamic mount tracking local iterations cleanly
+    volumes:
+      - .:/app
+      - /app/.venv # Protect internal container site-packages from local overwrites
+      
+    # Automated cluster health checking matrix parameters verification
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import http.client; conn = http.client.HTTPConnection(\"localhost\", 8000); conn.request(\"GET\", \"/\"); res = conn.getresponse(); exit(0) if res.status < 500 else exit(1)'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+      
+    restart: unless-stopped
