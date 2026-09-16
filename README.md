@@ -71,7 +71,16 @@ MIT See [LICENSE](license.md)
 Content and diagrams are derived from the public Unite. AI article “How AI Agents Work”.
 Badge and linking follow Unite. AI media-kit guidelines.
 
+### Python SDK: 
+`pip install azure-ai-projects azure-identity`
 
+### .NET SDK: Install the coherent preview package set and Azure Identity:
+```bash
+dotnet add package Azure.AI.Projects --version 2.1.0-beta.4
+dotnet add package Azure.AI.Projects.Agents --version 2.1.0-beta.4
+dotnet add package Azure.AI.Extensions.OpenAI --version 2.1.0-beta.4
+dotnet add package Azure.Identity
+```
 ### 2. `hamdGAI_init.py`
 ```python
 """
