@@ -8,6 +8,7 @@ services:
     container_name: hamdgai-core-service
     expose:
       - "8000"
+      - "9090"
     env_file:
       - .env
     volumes:
@@ -15,16 +16,25 @@ services:
       - /app/.venv
     restart: unless-stopped
 
-  hamdgai-gateway:
-    image: nginx:1.25-alpine
-    container_name: hamdgai-nginx-proxy
-    ports:
-      - "80:80"
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: hamdgai-prometheus
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - hamdgai-backend
+      - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
     restart: unless-stopped
-To fire up the production stack with proxy layers fully enabled, execute: 
-```bash
-docker compose -f docker-compose.prod.yml up -d --build
+
+  grafana:
+    image: grafana/grafana:10.0.3
+    container_name: hamdgai-grafana-viz
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./metrics/grafana_dashboard.json:/var/lib/grafana/dashboards/dashboard.json:ro
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    depends_on:
+      - prometheus
+    restart: unless-stopped
