@@ -81,6 +81,14 @@ dotnet add package Azure.AI.Projects.Agents --version 2.1.0-beta.4
 dotnet add package Azure.AI.Extensions.OpenAI --version 2.1.0-beta.4
 dotnet add package Azure.Identity
 ```
+### JavaScript SDK: `npm install @azure/ai-projects @azure/identity`
+
+### Azure Developer CLI: Install the Azure Developer CLI (azd 1.27.1 or later) and the unified Foundry CLI extension bundle:
+```Bash
+# Install the unified bundle (provides azd ai agent, connection, inspector,
+# project, routine, skill, and toolbox).
+azd ext install microsoft.foundry
+```
 ### 2. `hamdGAI_init.py`
 ```python
 """
