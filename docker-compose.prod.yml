@@ -16,11 +16,12 @@ services:
       - /app/.venv
     restart: unless-stopped
 
-  prometheus:
+    prometheus:
     image: prom/prometheus:v2.45.0
     container_name: hamdgai-prometheus
     volumes:
       - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./metrics/alerts.yml:/etc/prometheus/alerts.yml:ro # Added mapping hook
     ports:
       - "9090:9090"
     restart: unless-stopped
