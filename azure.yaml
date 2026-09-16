@@ -1,16 +1,133 @@
 # azure.yaml
-name: foundry-toolbox-deployment
-metadata:
-  template: ai-foundry-toolbox-v1
+{
+  "description": "Web search, knowledge base search, and custom MCP server",
+  "tools": [
+    {
+      "type": "web_search",
+      "description": "Search the web for current information"
+    },
+    {
+      "type": "azure_ai_search",
+      "name": "my_aisearch",
+      "description": "Search internal product documentation",
+      "azure_ai_search": {
+        "indexes": [
+          {
+            "index_name": "<INDEX_NAME>",
+            "project_connection_id": "<CONNECTION_NAME>"
+          }
+        ]
+      }
+    },
+    {
+      "type": "mcp",
+      "server_label": "myserver",
+      "server_url": "https://your-mcp-server.example.com",
+      "require_approval": "never",
+      "project_connection_id": "my-key-auth-connection"
+    }
+  ]
+} 
 
-services:
-  ai-toolbox:
-    project: ./
-    language: py
-    host: ://azure.com
-    # Connects the local configuration to the target cloud runtime context
-    module: azure.ai.toolbox
-    config:
-      path: azure.yaml
-      uses:
-        - toolboxes
+
+
+Note
+
+Each tool type (web_search, azure_ai_search, code_interpreter, file_search) can appear at most once without a name field. To include multiple instances of the same type, set a unique name on each instance - see the next example.
+Multi-tool restrictions
+
+You can include at most one instance of each built-in tool type without a name field in a toolbox. If you include two instances of the same type without a name, the API returns:
+
+400 invalid_payload: Multiple tools without identifiers found...
+
+Two instances of the same tool type
+
+Use the name field to include multiple instances of the same tool type in one toolbox. Each named instance is treated as a separate tool and must have a unique name.
+JSON
+
+{
+  "description": "Two Azure AI Search indexes in a single toolbox",
+  "tools": [
+    {
+      "type": "azure_ai_search",
+      "name": "product-search",
+      "description": "Search product catalog and specifications",
+      "azure_ai_search": {
+        "indexes": [
+          {
+            "index_name": "<PRODUCT_INDEX_NAME>",
+            "project_connection_id": "<PRODUCT_CONNECTION_NAME>"
+          }
+        ]
+      }
+    },
+    {
+      "type": "azure_ai_search",
+      "name": "support-search",
+      "description": "Search support tickets and troubleshooting guides",
+      "azure_ai_search": {
+        "indexes": [
+          {
+            "index_name": "<SUPPORT_INDEX_NAME>",
+            "project_connection_id": "<SUPPORT_CONNECTION_NAME>"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+### Each tool type has its own toolbox configuration - connection authentication types, per-language SDK snippets, and any toolbox-specific behavior. Those details live in each tool's reference article. See the Feature support table for a link to each tool.
+
+For toolbox-specific behavior - such as File Search dynamic vector store (parameter override) or resource-level file uploads for Code Interpreter and File Search - see the linked article for each tool.
+Configure guardrails
+
+Apply a named guardrail policy to a toolbox version to enforce responsible AI content filtering on tool inputs and outputs. The guardrail runs at the toolbox layer, independently of any model-level content filter.
+
+Reference a guardrail by its policy name, which you configure in the Foundry portal under Guardrails. Set policies.rai_config.rai_policy_name to the name of the policy when creating a toolbox version.
+```Python
+
+from azure.identity import DefaultAzureCredential
+from azure.ai.projects import AIProjectClient
+from azure.ai.projects.models import WebSearchToolboxTool
+```
+endpoint = "https://<your-foundry-account>.services.ai.azure.com/api/projects/<your-project>"
+project = AIProjectClient(endpoint=endpoint, credential=DefaultAzureCredential())
+
+toolbox_version = project.toolboxes.create_version(
+    name="my-toolbox",
+    description="Toolbox with guardrail",
+    tools=[WebSearchToolboxTool()],
+    policies={
+        "rai_config": {
+            "rai_policy_name": "/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.CognitiveServices/accounts/<account-name>/raiPolicies/<policy-name>"
+        }
+    },
+)
+print(f"Created version: {toolbox_version.version}")
+
+### Attach skills to a toolbox
+
+Attach skills to a toolbox version to make them available to agents through the toolbox MCP endpoint. Each skill reference specifies the skill name and an optional version. Omit version to use the skill's default_version; pin a version string to use an immutable snapshot.
+
+A toolbox version can contain tools, skills, or both. The following examples create a toolbox version that contains a single skill reference. To add skills to a toolbox that already has tools, include the same tools you used in Create a toolbox version along with the skills array.
+
+### Important
+
+Skills attached to a toolbox must exist in the same Foundry project. Cross-project references aren't supported.
+
+When an agent or MCP client connects to the toolbox endpoint, skills are exposed as MCP Resources. The MCP client or agent framework must support the MCP Resources protocol to auto-discover and load skills. To verify that skills are discoverable, call resources/list on the toolbox MCP endpoint and confirm your skill names appear in the response.
+Python
+
+from azure.ai.projects.models import ToolboxSkillReference
+
+toolbox_version = project.toolboxes.create_version(
+    name="my-toolbox",
+    description="Toolbox with a skill reference",
+    tools=[],
+    skills=[
+        ToolboxSkillReference(name="greeting"),              # use default version
+        # ToolboxSkillReference(name="greeting", version="1"),  # pin to version 1
+    ],
+)
+print(f"Created toolbox version: {toolbox_version.id}")
