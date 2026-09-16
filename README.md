@@ -238,6 +238,28 @@ def main():
 
 if __name__ == "__main__":
     main()
+```
+---
+### Region and model compatibility
+
+# Toolbox availability depends on two factors beyond the project region:
+
+- Region: Some tool types aren't available in every region that supports the agent service. For example, a region that supports the toolbox endpoint might not support all built-in tool types.
+
+Before deploying a toolbox, verify that our target region supports the tool types you plan to use. For the full compatibility tables, see [Tool support by region and model](https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/limits-quotas-regions#tool-support-by-region-and-model)
+
+### Related content
+
+- [Connect agents to Model Context Protocol servers](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/model-context-protocol)
+- [Available tools and example prompts for Foundry MCP Server](https://learn.microsoft.com/en-us/azure/foundry/mcp/available-tools)
+- [Add MCP server authentication](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/mcp-authentication)
+- [Web search tool](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/web-search)
+- [Azure AI Search tool](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/ai-search)
+- [Guardrails overview](https://learn.microsoft.com/en-us/azure/foundry/guardrails/guardrails-overview)
+- [Manage skills](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/skills)
+- [Deploy a Hosted agent](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/deploy-hosted-agent)
+- [Add a connection to your project](https://learn.microsoft.com/en-us/azure/foundry/how-to/connections-add)
+- [Configure network isolation for Microsoft Foundry](https://learn.microsoft.com/en-us/azure/foundry/how-to/configure-private-link)
 
 ---
 Copyright © 2026 MD ABUL HOSSAIN. All Rights Reserved.
