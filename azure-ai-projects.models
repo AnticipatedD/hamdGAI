@@ -1,0 +1,75 @@
+import os
+from azure.identity import DefaultAzureCredential
+from azure.ai.projects import AIProjectClient
+from azure.ai.projects.models import (
+    # Core toolbox definitions
+    MCPToolboxTool,
+    WebSearchToolboxTool,
+    AzureAISearchToolboxTool,
+    CodeInterpreterToolboxTool,
+    FileSearchToolboxTool,
+    OpenAPIToolboxTool,
+    AgentToAgentToolboxTool,
+    BrowserAutomationToolboxTool,
+    FabricIQToolboxTool,
+    WorkIQToolboxTool
+    # Note: 'Tool search' and 'Skills' do not support direct Python SDK integration
+)
+
+def create_foundry_toolbox():
+    # 1. Authenticate and initialize the Foundry client
+    # Double-check your physical environment variables or label to ensure endpoint correctness
+    endpoint = os.environ.get("FOUNDRY_PROJECT_ENDPOINT", "https://<your-foundry-account>.services.ai.azure.com/api/projects/<your-project>")
+    
+    project_client = AIProjectClient(
+        endpoint=endpoint,
+        credential=DefaultAzureCredential()
+    )
+
+    # 2. Map table line items to their respective SDK components 
+    # Configure parameters as needed based on your provisioned cloud connections
+    tools_list = [
+        # Model Context Protocol (MCP)
+        MCPToolboxTool(server_label="my_mcp_server"),
+        
+        # Web Search
+        WebSearchToolboxTool(),
+        
+        # Azure AI Search
+        AzureAISearchToolboxTool(connection_id="your_ai_search_connection_id"),
+        
+        # Code Interpreter
+        CodeInterpreterToolboxTool(),
+        
+        # File Search
+        FileSearchToolboxTool(),
+        
+        # OpenAPI (requires standard valid OpenAPI 3.0/3.1 specification context)
+        OpenAPIToolboxTool(spec_url="https://example.com"),
+        
+        # Agent-to-agent (A2A)
+        AgentToAgentToolboxTool(target_agent_id="target_agent_guid"),
+        
+        # Browser Automation
+        BrowserAutomationToolboxTool(),
+        
+        # Fabric IQ
+        FabricIQToolboxTool(),
+        
+        # Work IQ
+        WorkIQToolboxTool()
+    ]
+
+    # 3. Create the toolbox version (from the code block layout in Image 1)
+    print("Creating toolbox version with defined tools...")
+    toolbox_version = project_client.toolboxes.create_version(
+        name="enterprise-utility-toolbox",
+        description="Comprehensive toolbox covering all Python SDK supported line items.",
+        tools=tools_list
+    )
+    
+    print(f"Toolbox successfully created! Name: {toolbox_version.name} | Version: {toolbox_version.version}")
+    return toolbox_version
+
+if __name__ == "__main__":
+    create_foundry_toolbox()
