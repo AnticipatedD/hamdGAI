@@ -1,9 +1,10 @@
 import json
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from openai import OpenAI
 import structlog
+import jsonschema
 from config import Settings
-from errors import ToolExecutionError, ModelInferenceError
+from errors import ToolExecutionError, ModelInferenceError, BudgetExceededError
 from rag_pipeline import RAGPipeline
 
 # Production-grade structured logging telemetry architecture initialization
@@ -16,21 +17,31 @@ structlog.configure(
 logger = structlog.get_logger()
 
 class Tool:
-    def __init__(self, name: str, description: str, handler: Any):
+    def __init__(self, name: str, description: str, schema: dict, handler: Any):
         self.name = name
         self.description = description
+        self.schema = schema
         self.handler = handler
 
-    def execute(self, arguments: dict) -> Any:
-        """Executes operational parameters through tool definitions with strict error handling bounds."""
+    def execute(self, arguments: dict) -> dict:
+        """Validates payload schema constraints before routing variables to functional backends."""
         try:
-            logger.info("Initiating tool boundary execution", tool_name=self.name, args=arguments)
-            return self.handler(**arguments)
+            logger.info("Initiating tool interface logic loop", tool_name=self.name)
+            
+            # Strict input verification matching the tool definition schema fields
+            jsonschema.validate(instance=arguments, schema=self.schema)
+            
+            runtime_output = self.handler(**arguments)
+            return {"status": "success", "output": runtime_output}
+            
+        except jsonschema.ValidationError as ve:
+            logger.error("Input argument structure violates schema specifications", error=str(ve))
+            return {"status": "error", "result": f"Schema violation: {str(ve)}"}
         except TypeError as te:
-            logger.error("Parameter mismatch detected at tool boundary", tool_name=self.name, error=str(te))
-            raise ToolExecutionError(f"Tool input payload violates parameter type maps: {str(te)}") from te
+            logger.error("Parameter mismatch detected at tool boundary", error=str(te))
+            raise ToolExecutionError(f"Tool payload signature violation: {str(te)}") from te
         except Exception as e:
-            logger.error("Unexpected tool execution failure caught", tool_name=self.name, error=str(e))
+            logger.error("Unexpected tool execution failure caught", error=str(e))
             raise ToolExecutionError(f"Execution failed inside tool target system: {str(e)}") from e
 
 class AgentControlLoop:
@@ -52,7 +63,7 @@ class AgentControlLoop:
                 messages=history,
                 temperature=0.0
             )
-            content = response.choices[0].message.content
+            content = response.choices.message.content
             if not content:
                 raise ModelInferenceError("Model inference engine returned an empty response string payload.")
             return json.loads(content)
@@ -67,17 +78,22 @@ class AgentControlLoop:
         """Executes full multi-step execution loops tracking objective parameters states."""
         logger.info("Initializing baseline task orchestration thread", target_task=task)
         
-        # Inject RAG context baseline variables directly into the tracking loop
-        passages = self.rag.retrieve(task)
-        grounded_data = self.rag.grounded_answer(task, passages)
-        
+        # Safe catch block mapping stub pathways during deployment transitions
+        try:
+            passages = self.rag.retrieve(task)
+            grounded_data = self.rag.grounded_answer(task, passages)
+            system_context = f"Execute objectives using tools. Context: {grounded_data['answer']}"
+        except NotImplementedError as nie:
+            logger.warning("RAG pipeline operating in fallback mode", reason=str(nie))
+            system_context = "Execute objectives using tools. RAG database is unlinked."
+
         history = [
-            {"role": "system", "content": f"Execute objectives using tools. Context: {grounded_data['answer']}"},
+            {"role": "system", "content": system_context},
             {"role": "user", "content": task}
         ]
         
         for step in range(self.config.max_steps):
-            logger.info("Processing execution cycle status snapshot", current_step=step, max_bounds=self.config.max_steps)
+            logger.info("Processing execution cycle snapshot", current_step=step, max_bounds=self.config.max_steps)
             decision = self._model_decide(history)
             
             if decision.get("status") == "complete":
@@ -91,10 +107,10 @@ class AgentControlLoop:
                 if t_name not in self.tools:
                     raise ToolExecutionError(f"Requested tool target mapping '{t_name}' not registered.")
                 
-                result = self.tools[t_name].execute(t_args)
+                execution_result = self.tools[t_name].execute(t_args)
                 history.append({"role": "assistant", "content": json.dumps(decision)})
-                history.append({"role": "user", "content": f"Tool execution result: {json.dumps(result)}"})
+                history.append({"role": "user", "content": f"Tool execution result: {json.dumps(execution_result)}"})
             else:
                 raise ModelInferenceError("Invalid state trajectory selected by model engine framework.")
                 
-        raise TimeoutError("Agent control loop timed out prior to resolving task conditions targets.")
+        raise BudgetExceededError("Agent control loop timed out prior to resolving task conditions targets.")
