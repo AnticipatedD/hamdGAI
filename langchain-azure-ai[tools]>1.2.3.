@@ -1,0 +1,129 @@
+### LangGraph
+
+Hosted integration fragment requirements: Install langchain-azure-ai[tools]>1.2.3. The fragment uses AzureAIProjectToolbox; use the maintained LangGraph sample for the complete agent, package set, and deployment files.
+
+`.env` file:
+
+FOUNDRY_PROJECT_ENDPOINT=https://<account>.services.ai.azure.com/api/projects/<project>
+TOOLBOX_ENDPOINT=https://<account>.services.ai.azure.com/api/projects/<project>/toolboxes/<toolbox-name>/versions/<version>/mcp?api-version=v1
+TOOLBOX_NAME=agent-tools
+AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-4o
+
+`main.py` (key pattern):
+Python
+
+from langchain_azure_ai.tools import AzureAIProjectToolbox
+
+toolbox = AzureAIProjectToolbox(toolbox_name=TOOLBOX_NAME)
+tools = await toolbox.get_tools()
+
+### Important
+
+Class langchain_azure_ai.tools.AzureAIProjectToolbox requires langchain-azure-ai[tools]>1.2.3.
+Microsoft Agent Framework
+
+Install agent-framework-foundry in addition to the prerequisite Azure Identity package. For the complete implementation, see the maintained Agent Framework sample.
+
+Use FoundryToolbox from the Agent Framework SDK to connect to the toolbox endpoint. The class handles toolbox authentication and forwards the hosted-agent call context.
+
+`.env` file:
+
+FOUNDRY_PROJECT_ENDPOINT=https://<account>.services.ai.azure.com/api/projects/<project>
+TOOLBOX_ENDPOINT=https://<account>.services.ai.azure.com/api/projects/<project>/toolboxes/<toolbox-name>/versions/<version>/mcp?api-version=v1
+AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-4o
+
+`main.py` (key pattern):
+Python
+
+from agent_framework.foundry import FoundryToolbox
+from azure.identity import DefaultAzureCredential
+
+credential = DefaultAzureCredential()
+
+# Toolbox MCP endpoint (platform-injected at runtime via TOOLBOX_ENDPOINT)
+TOOLBOX_ENDPOINT = "https://<account>.services.ai.azure.com/api/projects/<project>/toolboxes/<toolbox-name>/versions/<version>/mcp?api-version=v1"
+
+toolbox = FoundryToolbox(
+    credential,
+    url=TOOLBOX_ENDPOINT,
+)
+
+agent = chat_client.as_agent(
+    name="my-toolbox-agent",
+    instructions="You are a helpful assistant with access to Foundry toolbox tools.",
+    tools=[toolbox],
+)
+ResponsesAgentServerHost().run()
+
+### Copilot SDK
+
+Hosted integration fragment requirements: Install the GitHub Copilot SDK for your runtime. The outline depends on application-owned McpBridge and _get_toolbox_token helpers that aren't implemented here. Follow the existing toolbox endpoint and authentication contract and hosted-agent integration patterns. A maintained full sample isn't yet available.
+
+Use the GitHub Copilot SDK to build a toolbox-powered agent that bridges Copilot's tool invocation to the Foundry toolbox MCP endpoint.
+
+# Note
+
+The Copilot SDK rejects tool names containing dots. The bridge automatically replaces . with _ in tool names. For example, myserver.get_info becomes myserver_get_info.
+
+`.env` file:
+
+GITHUB_TOKEN=<your-github-token>
+TOOLBOX_ENDPOINT=https://<account>.services.ai.azure.com/api/projects/<project>/toolboxes/<toolbox-name>/versions/<version>/mcp?api-version=v1
+
+`agent.py` (key pattern — MCP bridge):
+Python
+
+# 1. Open an MCP session to the toolbox endpoint
+bridge = McpBridge(endpoint=TOOLBOX_ENDPOINT, token=_get_toolbox_token())
+await bridge.initialize()
+mcp_tools = await bridge.list_tools()
+
+# 2. Map MCP tool list to Copilot SDK tool definitions
+#    Dots in tool names are replaced with underscores (Copilot SDK requirement)
+copilot_tools = [
+    {
+        "name": t["name"].replace(".", "_"),
+        "description": t.get("description", ""),
+        "parameters": t.get("inputSchema", {}),
+    }
+    for t in mcp_tools
+]
+
+# 3. Wire tool calls back to the MCP session
+async def tool_handler(name: str, arguments: dict) -> str:
+    return await bridge.call_tool(name.replace("_", ".", 1), arguments)
+
+# 4. Run the Copilot SDK agent
+agent = Agent(
+    tools=copilot_tools,
+    tool_handler=tool_handler,
+    token=os.environ["GITHUB_TOKEN"],
+)
+
+### Handle tool approval requirements
+
+The toolbox returns a _meta.tool_configuration object into every tool entry returned by tools/list. When a tool has require_approval set to "always", the agent runtime must present the pending action to the user and wait for confirmation before invoking the tool. The MCP endpoint doesn't block tools/call. Enforcement is entirely the agent runtime's responsibility.
+
+After our toolbox is created and tested, connect it to an agent. The integration pattern depends on the agent type:
+
+Hosted agent (our own code running in Foundry Agent Service): see Use a toolbox with a hosted agent for Agent Framework, LangGraph, Visual Studio Code, and Azure Developer CLI integration patterns and runtime approval requirements.
+
+### Configure require_approval on a tool
+
+Set require_approval when you create a toolbox version. The MCP tool examples in Create a toolbox version show both "always" and "never" values. To set it through the SDK:
+Python
+
+from azure.ai.projects.models import MCPToolboxTool
+
+# Set require_approval on an MCP tool
+toolbox_version = project.toolboxes.create_version(
+    name="my-toolbox",
+    tools=[
+        MCPToolboxTool(
+            server_label="myserver",
+            server_url="https://your-mcp-server.example.com",
+            require_approval="always",  # "always" | "never"
+            project_connection_id="my-connection",
+        )
+    ],
+)
