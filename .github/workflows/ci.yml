@@ -1,0 +1,35 @@
+name: Continuous Integration Architecture Platform
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository codebase targets
+      uses: actions/checkout@v4
+
+    - name: Set up Python Runtime execution layers
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install software framework along with developer tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Check code cleanliness patterns (Linter metrics verify)
+      run: ruff check .
+
+    - name: Verify static interface signature bindings (Type-check verify)
+      run: mypy .
+
+    - name: Run test suite enforcement checking strict code coverage tracking rules
+      run: |
+        pytest --cov=. --cov-fail-under=60 -v tests/
