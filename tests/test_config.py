@@ -9,6 +9,7 @@ def test_settings_default_allocations():
     assert settings.top_k == 5
     assert "write" in settings.require_approval_for
     assert "delete" in settings.require_approval_for
+    assert "purchase" in settings.require_approval_for
 
 def test_settings_validation_errors():
     """Validates boundary constraints handling logic on illegal variables inputs."""
