@@ -1,25 +1,29 @@
+from typing import List
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
-
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    """Manages typed configurations for the hamdGAI agent execution environment."""
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    # Model
-    openai_api_key: Optional[str] = None
-    model_name: str = "gpt-4o-mini"
-    temperature: float = 0.1
+    rocm_engine_url: str = Field(default="http://localhost:8000/v1")
+    rocm_api_key: str = Field(default="not-needed")
+    rocm_model_name: str = Field(default="Qwen3-Coder-30B-A3B-Instruct")
+    
+    max_steps: int = Field(default=20)
+    top_k: int = Field(default=5)
+    require_approval_for: List[str] = Field(default_factory=lambda: ["write", "delete", "purchase"])
 
-    # Agent control
-    max_steps: int = 20
-    max_tokens: int = 4096
-    cost_budget_usd: float = 1.0
+    @field_validator("max_steps")
+    @classmethod
+    def validate_max_steps(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("max_steps must be a positive integer parameter bounds.")
+        return value
 
-    # RAG
-    embedding_model: str = "text-embedding-3-small"
-    vector_store_path: str = "./data/vectorstore"
-    top_k: int = 5
-
-    # Safety
-    require_approval_for: list[str] = ["write", "delete", "purchase"]
-    log_level: str = "INFO"
+    @field_validator("top_k")
+    @classmethod
+    def validate_top_k(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("top_k capacity must be greater than zero allocation limits.")
+        return value
