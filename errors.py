@@ -6,6 +6,10 @@ class ToolExecutionError(AgentException):
     """Raised when an interactive tool execution boundary reports unexpected internal faults."""
     pass
 
+class BudgetExceededError(AgentException):
+    """Raised when the agent exceeds maximum step thresholds or pricing limitations."""
+    pass
+
 class RAGPipelineError(AgentException):
     """Raised when index access layers fail to map knowledge boundaries properly."""
     pass
