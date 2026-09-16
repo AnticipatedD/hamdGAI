@@ -1,0 +1,39 @@
+groups:
+  - name: hamdgai-agent-alerts
+    rules:
+      # Alert when the agent tool execution failure rate exceeds 10% over a 5-minute window
+      - alert: AgentToolFailureRateHigh
+        expr: |
+          sum(rate(hamdgai_tool_executions_total{status="error"}[5m])) 
+          / 
+          sum(rate(hamdgai_tool_executions_total[5m])) * 100 > 10
+        for: 2m
+        labels:
+          severity: critical
+          tier: backend
+          hardware_target: amd-mi300x
+        annotations:
+          summary: "High tool failure rate detected on agent loop"
+          description: "The agent tool execution error rate is currently {{ $value | printf \"%.2f\" }}%, which exceeds the safe threshold of 10% for over 2 minutes."
+
+      # Alert if the agent loop execution stalls or times out frequently
+      - alert: AgentStepLatencySpike
+        expr: histogram_quantile(0.95, sum(rate(hamdgai_agent_step_latency_seconds_bucket[5m])) by (le)) > 30
+        for: 3m
+        labels:
+          severity: warning
+          tier: backend
+        annotations:
+          summary: "Agent control loop p95 latency spike"
+          description: "The 95th percentile of agent step latency has reached {{ $value | printf \"%.2f\" }}s, indicating heavy inference slowdowns or engine stalls."
+
+      # Alert if the backend application container stops exposing metrics altogether
+      - alert: AgentServiceDown
+        expr: up{job="hamdgai-agent-service"} == 0
+        for: 1m
+        labels:
+          severity: page
+          tier: infrastructure
+        annotations:
+          summary: "hamdGAI core container unreachable"
+          description: "Prometheus has been unable to scrape the hamdGAI metrics exporter for over 1 minute. The service may have crashed or suffered an OOM event."
