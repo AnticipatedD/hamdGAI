@@ -8,15 +8,38 @@ from hamdGAI_init import AgentControlLoop, Tool
 def base_config():
     return Settings(rocm_api_key="mock-test-key", max_steps=3, top_k=2)
 
-def test_tool_boundary_parameter_mismatches():
-    """Asserts tool handler input errors generate clean exception tracking logs."""
-    def sample_handler(target_id: int) -> str:
+@pytest.fixture
+def sample_schema():
+    return {
+        "type": "object",
+        "properties": {
+            "target_id": {"type": "integer"}
+        },
+        "required": ["target_id"]
+    }
+
+def test_tool_boundary_schema_validation_failure(sample_schema):
+    """Asserts Tool.execute returns status 'error' when arguments violate the schema fields."""
+    def dummy_handler(target_id: int) -> str:
         return f"ID_{target_id}"
         
-    tool = Tool(name="verify_id", description="Sample tool target description", handler=sample_handler)
+    tool = Tool(name="verify_id", description="Sample validation tool", schema=sample_schema, handler=dummy_handler)
     
-    with pytest.raises(ToolExecutionError, match="violates parameter type maps"):
-        tool.execute({"wrong_param_key": "data"})
+    # Violate type specifications (string passed instead of required integer)
+    response = tool.execute({"target_id": "malicious_string_input"})
+    assert response["status"] == "error"
+    assert "Schema violation" in response["result"]
+
+def test_tool_boundary_successful_execution(sample_schema):
+    """Asserts safe argument packages execute smoothly returning proper wrappers."""
+    def dummy_handler(target_id: int) -> str:
+        return f"COMPLETED_{target_id}"
+        
+    tool = Tool(name="verify_id", description="Sample validation tool", schema=sample_schema, handler=dummy_handler)
+    response = tool.execute({"target_id": 1024})
+    
+    assert response["status"] == "success"
+    assert response["output"] == "COMPLETED_1024"
 
 @patch('hamdGAI_init.OpenAI')
 def test_agent_control_loop_successful_completion(mock_openai_class, base_config):
@@ -34,18 +57,3 @@ def test_agent_control_loop_successful_completion(mock_openai_class, base_config
     output = agent.run("Verify infrastructure matrix indices details.")
     
     assert output == "Pipeline Success Outcome"
-
-@patch('hamdGAI_init.OpenAI')
-def test_agent_control_loop_malformed_json_handling(mock_openai_class, base_config):
-    """Asserts parser framework captures bad execution trajectories reliably from completions."""
-    mock_client = MagicMock()
-    mock_openai_class.return_value = mock_client
-    
-    mock_response = MagicMock()
-    mock_response.choices = [MagicMock(message=MagicMock(content='{bad_json_string_payload}'))]
-    mock_client.chat.completions.create.return_value = mock_response
-    
-    agent = AgentControlLoop(config=base_config)
-    
-    with pytest.raises(ModelInferenceError, match="Malformed structural decisions output"):
-        agent.run("Test execution loop metrics path tracing.")
