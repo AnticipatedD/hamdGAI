@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  hamdgai-test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hamdgai-ci-sandbox
+    env_file:
+      - .env
+    environment:
+      - ROCM_API_KEY=mock-isolated-key
+    volumes:
+      - .:/app
+    # Installs the development optional dependencies group and executes continuous code quality checks
+    command: >
+      bash -c "pip install -e '.[dev]' && 
+               echo '=== Running Lint Checks ===' && ruff check . && 
+               echo '=== Running Type Assertions ===' && mypy . && 
+               echo '=== Running Automated Test Matrix ===' && pytest --cov=. --cov-fail-under=60 -v tests/"
+To run this automated verification sandbox loop, execute: 
+bash
+docker compose -f docker-compose.dev.yml up --build
