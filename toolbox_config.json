@@ -1,0 +1,39 @@
+{
+  "description": "Web search, knowledge base search, and custom MCP server.",
+  "tools": [
+    {
+      "type": "web_search"
+    },
+    {
+      "type": "azure_ai_search",
+      "connection_id": "your_ai_search_connection_id"
+    },
+    {
+      "type": "mcp",
+      "server_label": "custom_mcp_server"
+    },
+    {
+      "type": "code_interpreter"
+    },
+    {
+      "type": "file_search"
+    },
+    {
+      "type": "openapi",
+      "spec_url": "https://example.com"
+    },
+    {
+      "type": "agent_to_agent",
+      "target_agent_id": "target_agent_guid"
+    },
+    {
+      "type": "browser_automation"
+    },
+    {
+      "type": "fabric_iq"
+    },
+    {
+      "type": "work_iq"
+    }
+  ]
+}
