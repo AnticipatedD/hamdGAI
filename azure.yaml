@@ -1,0 +1,16 @@
+# azure.yaml
+name: foundry-toolbox-deployment
+metadata:
+  template: ai-foundry-toolbox-v1
+
+services:
+  ai-toolbox:
+    project: ./
+    language: py
+    host: ://azure.com
+    # Connects the local configuration to the target cloud runtime context
+    module: azure.ai.toolbox
+    config:
+      path: azure.yaml
+      uses:
+        - toolboxes
