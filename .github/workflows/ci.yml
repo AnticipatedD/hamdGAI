@@ -36,3 +36,14 @@ jobs:
     - name: Run test suite enforcement checking strict code coverage tracking rules
       run: |
         pytest --cov=. --cov-fail-under=60 -v tests/
+            - name: Setup Terraform Core Engine
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+    - name: Validate Infrastructure Style Layouts
+        run: |
+          cd terraform
+          terraform init -backend=false
+          terraform fmt -check
+          terraform validation 
