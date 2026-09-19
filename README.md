@@ -54,7 +54,18 @@ Load instructions → Model decides → Tool executes (runtime validates) → St
 - Start with the smallest architecture that solves the task.
 
 ## Repository Layout
-
+hamdGAI/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── hamdgai/
+│   ├── __init__.py
+│   └── rocm_engine.py
+├── tests/
+│   ├── __init__.py
+│   └── test_rocm_engine.py
+├── .gitignore
+├── LICENSE
 hamdGAI/
 ├── hamdGAI_init.py          # entry-point & basic agent loop
 ├── config.py                # typed configuration
