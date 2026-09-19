@@ -1,12 +1,19 @@
 import pytest
-from errors import RAGPipelineError
 from rag_pipeline import RAGPipeline
 
-def test_rag_retrieve_not_implemented_stub():
-    """Asserts that the database layer raises an explicit structural warning blueprint."""
+def test_rag_pipeline_retrieval_success():
     pipeline = RAGPipeline()
-    with pytest.raises(NotImplementedError, match="Vector database engine core connection"):
-        pipeline.retrieve("Verify system allocations indices properties.")
+    results = pipeline.retrieve("ROCm linear algebra")
+    assert len(results) > 0
+    assert "doc2" in [r["id"] for r in results]
+
+
+def test_rag_pipeline_grounded_answer():
+    pipeline = RAGPipeline()
+    res = pipeline.grounded_answer("deep learning GPU")
+    assert res["confidence"] > 0.0
+    assert len(res["passages"]) > 0
+
 
 def test_rag_retrieve_empty_validation_guards():
     """Validates that RAG logic blocks emit custom execution warnings on empty targets."""
