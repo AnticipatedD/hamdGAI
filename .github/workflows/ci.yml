@@ -1,4 +1,4 @@
-name: hamdGAI Architecture CI/CD Platform
+name: hamdGAI ROCm Architecture CI/CD Platform
 
 on:
   push:
@@ -20,49 +20,51 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install Locked Dependencies & Analysis Tools
+      - name: Install Pinned Dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements-lock.txt ]; then pip install -r requirements-lock.txt; else pip install -e ".[dev]"; fi
-          pip install pip-audit flake8 black mypy ruff
+          pip install -r requirements-lock.txt
 
-      - name: Execute Security Vulnerability Audit
-        run: pip-audit || true
+      - name: Execute Strict Security Vulnerability Audit
+        run: pip-audit
 
-      - name: Code Style Check (Black, Flake8 & Ruff)
+      - name: Code Style Verification (Black, Flake8 & Ruff)
         run: |
           black --check .
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           ruff check .
 
-      - name: Static Type Checking
+      - name: Static Type Verification
         run: mypy --ignore-missing-imports .
 
-  terraform-validate:
-    name: Infrastructure IaC Validation
+  terraform-security:
+    name: Infrastructure Security & Policy Scan
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository codebase
         uses: actions/checkout@v4
 
-      - name: Setup Terraform Core Engine
+      - name: Setup Terraform Engine
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0
 
-      - name: Validate Infrastructure Modules
+      - name: Validate Infrastructure Syntax
         run: |
           cd terraform
           terraform init -backend=false
           terraform fmt -check
           terraform validate
 
-  test-and-coverage:
-    name: Test Suite & Coverage Verification
-    needs: [lint-and-audit, terraform-validate]
+      - name: Run tfsec Security Policy Scanner
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: terraform
+
+  unit-tests:
+    name: Unit Tests & Coverage Verification
+    needs: [lint-and-audit, terraform-security]
     runs-on: ubuntu-latest
-    env:
-      PYTHONUNBUFFERED: "1"
     steps:
       - name: Check out repository codebase
         uses: actions/checkout@v4
@@ -73,17 +75,11 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install Runtime & Test Dependencies
+      - name: Install Pinned Dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements-lock.txt ]; then pip install -r requirements-lock.txt; else pip install -e ".[dev]"; fi
+          pip install -r requirements-lock.txt
 
-      - name: Run Test Suite Enforcement
+      - name: Run Test Suite (CPU Fallback Guaranteed)
         run: |
-          pytest tests/ -v -s --cov=. --cov-fail-under=60 --cov-report=xml
-
-      - name: Upload Coverage Artifacts
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-          fail_ci_if_error: false
+          pytest tests/ -v -s --cov=. --cov-fail-under=60
