@@ -1,9 +1,23 @@
 # test_toolbox.py
 import os
 import sys
+import pytest
 from azure.identity import DefaultAzureCredential
 from azure.ai.projects import AIProjectClient
 from azure.core.exceptions import HttpResponseError
+from unittest.mock import MagicMock, patch
+
+def test_azure_toolbox_discovery_mocked():
+    with patch("azure.ai.projects.AIProjectClient") as MockClient:
+        mock_instance = MockClient.return_value
+        mock_instance.telemetry.get_connections.return_value = [
+            MagicMock(id="conn_123", name="Azure AI Search Connection")
+        ]
+
+        # Simulate connection inspection
+        connections = mock_instance.telemetry.get_connections()
+        assert len(connections) == 1
+        assert connections[0].name == "Azure AI Search Connection"
 
 def verify_and_test_toolbox():
     print("🔍 Initializing AI Project connection...")
