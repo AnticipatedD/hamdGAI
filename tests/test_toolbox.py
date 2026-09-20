@@ -1,73 +1,71 @@
-# test_toolbox.py
+"""Unit tests and discovery utilities for Azure AI Foundry toolbox integrations."""
+
 import os
 import sys
-import pytest
-from azure.identity import DefaultAzureCredential
-from azure.ai.projects import AIProjectClient
-from azure.core.exceptions import HttpResponseError
 from unittest.mock import MagicMock, patch
+import pytest
 
-def test_azure_toolbox_discovery_mocked():
-    with patch("azure.ai.projects.AIProjectClient") as MockClient:
-        mock_instance = MockClient.return_value
-        mock_instance.telemetry.get_connections.return_value = [
-            MagicMock(id="conn_123", name="Azure AI Search Connection")
-        ]
 
-        # Simulate connection inspection
-        connections = mock_instance.telemetry.get_connections()
-        assert len(connections) == 1
-        assert connections[0].name == "Azure AI Search Connection"
+def verify_and_test_toolbox(client=None) -> list[dict]:
+    """Helper utility to inspect deployed tools via active or injected client."""
+    if client is None:
+        endpoint = os.environ.get("AZURE_AI_FOUNDRY_ENDPOINT")
+        if not endpoint:
+            raise ValueError("AZURE_AI_FOUNDRY_ENDPOINT environment variable is missing")
 
-def verify_and_test_toolbox():
-    print("🔍 Initializing AI Project connection...")
-    
-    # Extract endpoint from environment variables
-    # Always double-check your physical endpoint labels match your cloud console values
-    endpoint = os.environ.get("AZURE_AI_FOUNDRY_ENDPOINT")
-    if not endpoint:
-        print("❌ Error: AZURE_AI_FOUNDRY_ENDPOINT environment variable is missing!")
-        sys.exit(1)
+        from azure.identity import DefaultAzureCredential
+        from azure.ai.projects import AIProjectClient
 
-    try:
         client = AIProjectClient(
             endpoint=endpoint,
             credential=DefaultAzureCredential()
         )
-        
-        print("📡 Fetching deployed tools from your active toolbox...")
-        # Simulates the tools/list request from Image 3
-        deployed_tools = client.toolboxes.list_tools() 
-        
-        # Scenario Check: Empty list handling (Troubleshooting line items 1-4)
-        if not deployed_tools or len(deployed_tools) == 0:
-            print("\n⚠️ Alert: tools/list returned zero tools!")
-            print("💡 Diagnostic Suggestions:")
-            print("  - [MCP/A2A]: Verify your 'project_connection_id' or 'remote credentials' are valid.")
-            print("  - [OpenAPI]: Validate that your OpenAPI specification JSON is structurally well-formed.")
-            print("  - [Filters]: Check if an restrictive 'allowed_tools' filter is accidentally hiding your assets.")
-            print("  - [Provisioning]: If recently deployed, wait 10 seconds and retry the query.")
-            return
 
-        print(f"\n✅ Successfully retrieved {len(deployed_tools)} active tools:")
-        for idx, tool in enumerate(deployed_tools, 1):
-            print(f"  {idx}. Type: {tool.get('type')} | Name/Label: {tool.get('server_label', 'N/A')}")
+    deployed_tools = client.toolboxes.list_tools()
+    if not deployed_tools:
+        return []
 
-    except HttpResponseError as error:
-        print(f"\n❌ API Call Failed with status code: {error.status_code}")
-        print("💡 Troubleshoot Guide (from documentation):")
-        
-        if error.status_code == 401:
-            print("  -> [401 Unauthorized]: Token has expired or scope is invalid. Run 'az login' again.")
-        elif error.status_code == 400:
-            print("  -> [400 Bad Request]: Look for duplicate tool definitions without proper unique 'server_label' fields.")
-        elif error.status_code == 500:
-            print("  -> [500 Server Error]: Ensure custom components implement the required MCP 'ping' and 'prompts/list' methods.")
-        else:
-            print(f"  -> Raw message detail: {error.message}")
+    return deployed_tools
 
-    except Exception as general_err:
-        print(f"\n❌ Unexpected runtime connection error: {str(general_err)}")
+
+def test_azure_toolbox_discovery_mocked():
+    """Verify connection retrieval using mocked AIProjectClient telemetry."""
+    with patch("azure.ai.projects.AIProjectClient") as mock_client_cls:
+        mock_instance = mock_client_cls.return_value
+        mock_instance.telemetry.get_connections.return_value = [
+            MagicMock(id="conn_123", name="Azure AI Search Connection")
+        ]
+
+        connections = mock_instance.telemetry.get_connections()
+        assert len(connections) == 1
+        assert connections[0].name == "Azure AI Search Connection"
+
+
+def test_verify_and_test_toolbox_execution():
+    """Verify toolbox listing execution path with mocked tool outputs."""
+    mock_client = MagicMock()
+    mock_client.toolboxes.list_tools.return_value = [
+        {"type": "mcp", "server_label": "rocm-search-tool"},
+        {"type": "openapi", "server_label": "vector-index-tool"}
+    ]
+
+    tools = verify_and_test_toolbox(client=mock_client)
+
+    assert len(tools) == 2
+    assert tools[0]["server_label"] == "rocm-search-tool"
+    assert tools[1]["type"] == "openapi"
+
+
+def test_verify_and_test_toolbox_missing_endpoint():
+    """Ensure ValueError is raised if endpoint environment variable is missing."""
+    with patch.dict(os.environ, {}, clear=True):
+        with pytest.raises(ValueError, match="AZURE_AI_FOUNDRY_ENDPOINT environment variable is missing"):
+            verify_and_test_toolbox(client=None)
+
 
 if __name__ == "__main__":
-    verify_and_test_toolbox()
+    try:
+        results = verify_and_test_toolbox()
+        print(f"✅ Successfully retrieved {len(results)} active tools.")
+    except Exception as err:
+        print(f"❌ Execution failed: {err}")
