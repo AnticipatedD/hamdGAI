@@ -1,4 +1,5 @@
 # hamdGAI
+
 <div align="center">
   
 ![AMD](https://img.shields.io/badge/AMD-Skills-ED1C24?logo=amd&logoColor=white)
@@ -8,277 +9,133 @@
 [![Cursor](https://img.shields.io/badge/Cursor-Compatible-000000?logo=cursor&logoColor=white)](https://cursor.com)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Compatible-F07535?logo=claude&logoColor=white)](https://www.anthropic.com/claude-code)
 
-**How AI Agents Work – Model, Tools, Memory & Control Loop**
+</div>
+
+## How AI Agents Work – Model, Tools, Memory & Control Loop
 
 ![How hamdGAI agents work](how-hamdGAI-agents-work-1920x1080-1.jpg.webp)
 
-An AI agent is an engineered loop, not just a smart model.  
-`hamdGAI` implements the five core parts described in the Unite. 
+An AI agent is an engineered loop, not just a smart model. `hamdGAI` implements a modular agent framework paired with hardware-accelerated compute capabilities.
 
-## AI reference architecture:
+### AI Reference Architecture:
 
-1. **Model** – interprets the objective and proposes the next action  
-2. **Instructions** – role, boundaries, policies, stopping criteria  
-3. **Tools** – validated, least-privilege capabilities executed by the runtime  
-4. **State & Memory** – current run state + selective long-term memory  
-5. **Control Loop** – observe → decide → act → update → (continue | escalate | stop)
+1. **Model** – Interprets objectives and proposes actions.
+2. **Instructions** – Role boundaries, operational policies, and stopping criteria.
+3. **Tools** – Validated, least-privilege capabilities executed safely by the runtime.
+4. **State & Memory** – Active execution state with grounded retrieval memory.
+5. **Control Loop** – Observe → Decide → Act → Update → (Continue | Escalate | Stop).
 
-> Featured coverage: [How AI Agents Work on Unite.AI](https://www.unite.ai/how-ai-agents-work/)
+---
 
-```html
-<a href="https://www.unite.ai/How-hamdGAI-Agents-Work/" aria-label="View this coverage on Unite.AI" style="display:inline-flex;align-items:center;gap:18px;padding:20px 24px;border:1px solid #d6e0e6;border-radius:12px;background:#ffffff;color:#17232d;font-family:Arial,Helvetica,sans-serif;text-decoration:none;"><span style="font-size:16px;font-weight:700;white-space:nowrap;">Featured in</span><img src="https://www.unite.ai/wp-content/uploads/2021/03/logoUNITE230X30WHITE-1.svg" alt="Unite.AI" width="230" height="30" style="display:block;width:230px;max-width:55vw;height:auto;"></a>
-```
 ## Quick Start
-```
-git clone https://github.com/AnticipatedD/hamdGAI.git
+
+### Installation
+
+Ensure Python 3.11+ is installed, then clone and setup the environment using pinned dependencies:
+
+```bash
+git clone [https://github.com/AnticipatedD/hamdGAI.git](https://github.com/AnticipatedD/hamdGAI.git)
 cd hamdGAI
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
-cp .env.example .env        # add your keys
-pytest
-python -m hamdGAI_init      # smoke test the agent runtime 
+pip install -r requirements-lock.txt
+cp .env.example .env
 ```
 
-## Architecture (matches the article diagrams) 
-Load instructions → Model decides → Tool executes (runtime validates) → State updates → Loop continues / escalates / recovers safely 
--
-- Defined path (Agent runtime) preserves authority and evidence.
-- Shortcut (Model alone) can only predict tokens and cannot execute.
+# Execution & Testing 
+```bash
+# Run unit test suite (with CPU fallback validation)
+pytest
 
-## Key Design Principles (from the article) 
-- Explicit tool contracts (typed args, structured errors, provenance).
-- Budgets, error thresholds, approval gates, and external graders for stopping.
-- Separate verified facts from model-generated summaries.
-- Least-privilege tools and observable trajectories.
-- Start with the smallest architecture that solves the task.
+# Smoke test the core agent runtime loop
+python hamdGAI_init.py
+```
+### Core System Features & Architecture 
+# Key Design Principles
+- **Explicit Tool Contracts**: Typed input validation, structured exception handling, and full execution provenance.
+- **​Controlled Execution Budgets**: Strict step budgets, error thresholds, and escalation pathways.
+- ​**Grounded Decision Making**: Clear separation of verified facts from model-generated summaries via RAG pipelines.
+- **​Hardware Acceleration**: AMD ROCm GPU PyTorch kernels with seamless CPU fallback capabilities.
 
-## Repository Layout
+  """Environment Configuration Schema for hamdGAI Runtime."""
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Configuration settings mapped to environment variables."""
+
+    # -------------------------------------------------------------------------
+    # AGENT RUNTIME CONFIGURATION
+    # -------------------------------------------------------------------------
+    agent_max_steps: int = Field(
+        default=10,
+        alias="AGENT_MAX_STEPS",
+        description="Maximum allowed iteration steps per agent execution run",
+    )
+
+    # -------------------------------------------------------------------------
+    # ROCM COMPUTE ACCELERATION CONFIGURATION
+    # -------------------------------------------------------------------------
+    rocm_api_key: str = Field(
+        default="rocm_sec_key_123",
+        alias="ROCM_API_KEY",
+        description="Authentication key for binding AMD ROCm acceleration services",
+    )
+
+    # -------------------------------------------------------------------------
+    # TELEMETRY & MONITORING CONFIGURATION
+    # -------------------------------------------------------------------------
+    prometheus_port: int = Field(
+        default=9090,
+        alias="PROMETHEUS_PORT",
+        description="Exposed port for metric tracking and operational monitoring",
+    )
+
+    # -------------------------------------------------------------------------
+    # VECTOR SEARCH & AZURE AI FOUNDRY INTEGRATION
+    # -------------------------------------------------------------------------
+    ai_search_conn_id: str = Field(
+        default="search_conn_01",
+        alias="AI_SEARCH_CONN_ID",
+        description="Connection identifier for vector retrieval services",
+    )
+    azure_subscription_id: str = Field(
+        default="00000000-0000-0000-0000-000000000000",
+        alias="AZURE_SUBSCRIPTION_ID",
+        description="Target cloud deployment subscription identifier",
+    )
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+
+# Instantiate global settings object for import across modules
+settings = Settings()
+
+# Repository Structure 
 hamdGAI/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml
-├── hamdgai/
-│   ├── __init__.py
-│   └── rocm_engine.py
+│       └── ci.yml             # Integrated lint, terraform, and pytest pipeline
+├── terraform/
+│   └── main.tf                # Agent cluster IaC modules
 ├── tests/
-│   ├── __init__.py
-│   └── test_rocm_engine.py
-├── .gitignore
-├── LICENSE
-hamdGAI/
-├── hamdGAI_init.py          # entry-point & basic agent loop
-├── config.py                # typed configuration
-├── rag_pipeline.py          # retrieval + grounding component
-├── tests/
-│   └── test_hamdGAI_init.py
-├── .env.example
-├── CONTRIBUTING.md
-├── SECURITY.md
-├── CODE_OF_CONDUCT.md
-├── METRICS.md
-├── LICENSE
-└── pyproject.toml / requirements.txt 
+│   ├── test_rag_pipeline.py   # RAG retrieval and vector matching tests
+│   ├── test_rocm_engine_cpu.py# ROCm compute engine CPU fallback unit tests
+│   └── test_toolbox.py        # Mocked Azure AI Project client integration tests
+├── config.py                  # Pydantic Settings schema
+├── hamdGAI_init.py            # Main entry point & control loop
+├── rag_pipeline.py            # Grounded in-memory vector search pipeline
+├── rocm_engine.py             # ROCm tensor compute suite (GEMM, FFT, Cholesky)
+├── .env.example               # Environment variable templates
+├── pyproject.toml             # Project build configuration
+└── requirements-lock.txt      # Pinned dependency lockfile
 
-## Status & Metrics 
-See METRICS.md for live evaluation results, latency, success rate, and cost budgets. 
-
-## License 
-MIT See [LICENSE](license.md)
-
-## Citation / Attribution 
-Content and diagrams are derived from the public Unite. AI article “How AI Agents Work”.
-Badge and linking follow Unite. AI media-kit guidelines.
-
-### Python SDK: 
-`pip install azure-ai-projects azure-identity`
-
-### .NET SDK: Install the coherent preview package set and Azure Identity:
-```bash
-dotnet add package Azure.AI.Projects --version 2.1.0-beta.4
-dotnet add package Azure.AI.Projects.Agents --version 2.1.0-beta.4
-dotnet add package Azure.AI.Extensions.OpenAI --version 2.1.0-beta.4
-dotnet add package Azure.Identity
-```
-### JavaScript SDK: `npm install @azure/ai-projects @azure/identity`
-
-### Azure Developer CLI: Install the Azure Developer CLI (azd 1.27.1 or later) and the unified Foundry CLI extension bundle:
-```Bash
-# Install the unified bundle (provides azd ai agent, connection, inspector,
-# project, routine, skill, and toolbox).
-azd ext install microsoft.foundry
-```
-### 2. `hamdGAI_init.py`
-```python
-"""
-hamdGAI – minimal but complete agent runtime implementing the five-part architecture.
-"""
-
-from __future__ import annotations
-
-import json
-import logging
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
-
-from config import Settings
-from rag_pipeline import RAGPipeline
-
-logger = logging.getLogger("hamdGAI")
-
-
-@dataclass
-class AgentState:
-    objective: str
-    messages: List[Dict[str, str]] = field(default_factory=list)
-    observations: List[Dict[str, Any]] = field(default_factory=list)
-    steps: int = 0
-    budget_remaining: int = 20
-    completed: bool = False
-    escalated: bool = False
-
-
-class Tool:
-    def __init__(self, name: str, description: str, fn: Callable, schema: Dict):
-        self.name = name
-        self.description = description
-        self.fn = fn
-        self.schema = schema
-
-    def execute(self, **kwargs) -> Dict[str, Any]:
-        # Runtime validation happens here – never trust the model blindly
-        try:
-            result = self.fn(**kwargs)
-            return {"status": "ok", "result": result, "error": None}
-        except Exception as e:
-            return {"status": "error", "result": None, "error": str(e)}
-
-
-class HamdGAIAgent:
-    """
-    Control loop:
-    1. Load instructions
-    2. Model decides (propose tool or final answer)
-    3. Runtime validates & executes tool
-    4. State updates
-    5. Loop / escalate / recover / stop
-    """
-
-    def __init__(self, settings: Settings, tools: List[Tool], rag: Optional[RAGPipeline] = None):
-        self.settings = settings
-        self.tools = {t.name: t for t in tools}
-        self.rag = rag or RAGPipeline(settings)
-        self.system_prompt = self._build_system_prompt()
-
-    def _build_system_prompt(self) -> str:
-        tool_desc = "\n".join(
-            f"- {name}: {t.description}" for name, t in self.tools.items()
-        )
-        return f"""You are a reliable AI agent.
-Follow the operational instructions strictly.
-Available tools:
-{tool_desc}
-
-Rules:
-- Prefer evidence over assumption.
-- Use structured tool calls only.
-- Escalate when confidence is low or budget is exhausted.
-- Stop only when completion criteria are met.
-"""
-
-    def run(self, objective: str) -> AgentState:
-        state = AgentState(objective=objective, budget_remaining=self.settings.max_steps)
-        state.messages.append({"role": "system", "content": self.system_prompt})
-        state.messages.append({"role": "user", "content": objective})
-
-        while not state.completed and not state.escalated and state.budget_remaining > 0:
-            state.steps += 1
-            state.budget_remaining -= 1
-
-            # 1. Model decides (in real use replace with LLM call that returns tool call or final)
-            decision = self._model_decide(state)
-
-            if decision.get("type") == "final":
-                state.completed = True
-                state.messages.append({"role": "assistant", "content": decision["content"]})
-                break
-
-            if decision.get("type") == "tool":
-                tool_name = decision["name"]
-                args = decision.get("args", {})
-                if tool_name not in self.tools:
-                    obs = {"status": "error", "error": f"Unknown tool {tool_name}"}
-                else:
-                    # 2. Runtime validates & executes
-                    obs = self.tools[tool_name].execute(**args)
-                # 3. Observe & update state
-                state.observations.append(obs)
-                state.messages.append(
-                    {"role": "tool", "content": json.dumps(obs, ensure_ascii=False)}
-                )
-
-            if state.budget_remaining <= 0:
-                state.escalated = True
-                logger.warning("Budget exhausted – escalating")
-
-        return state
-
-    def _model_decide(self, state: AgentState) -> Dict[str, Any]:
-        """
-        Placeholder for the real LLM call.
-        In production this would call the model with the current messages
-        and parse a structured tool call or final answer.
-        """
-        # Demo logic – replace with real model
-        if state.steps == 1:
-            return {
-                "type": "tool",
-                "name": "rag_search",
-                "args": {"query": state.objective},
-            }
-        return {"type": "final", "content": "Task completed with available evidence."}
-
-
-def main():
-    logging.basicConfig(level=logging.INFO)
-    settings = Settings()
-    tools = [
-        Tool(
-            name="rag_search",
-            description="Retrieve grounded passages from the knowledge base",
-            fn=lambda query: {"passages": ["example grounded result"]},
-            schema={"type": "object", "properties": {"query": {"type": "string"}}},
-        )
-    ]
-    agent = HamdGAIAgent(settings, tools)
-    result = agent.run("Compare three suppliers and prepare a recommendation")
-    print(json.dumps(result.__dict__, indent=2, default=str))
-
-
-if __name__ == "__main__":
-    main()
-```
----
-### Region and model compatibility
-
-# Toolbox availability depends on two factors beyond the project region:
-
-- Region: Some tool types aren't available in every region that supports the agent service. For example, a region that supports the toolbox endpoint might not support all built-in tool types.
-
-Before deploying a toolbox, verify that our target region supports the tool types you plan to use. For the full compatibility tables, see [Tool support by region and model](https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/limits-quotas-regions#tool-support-by-region-and-model)
-
-### Related content
-
-- [Connect agents to Model Context Protocol servers](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/model-context-protocol)
-- [Available tools and example prompts for Foundry MCP Server](https://learn.microsoft.com/en-us/azure/foundry/mcp/available-tools)
-- [Add MCP server authentication](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/mcp-authentication)
-- [Web search tool](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/web-search)
-- [Azure AI Search tool](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/ai-search)
-- [Guardrails overview](https://learn.microsoft.com/en-us/azure/foundry/guardrails/guardrails-overview)
-- [Manage skills](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/skills)
-- [Deploy a Hosted agent](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/deploy-hosted-agent)
-- [Add a connection to your project](https://learn.microsoft.com/en-us/azure/foundry/how-to/connections-add)
-- [Configure network isolation for Microsoft Foundry](https://learn.microsoft.com/en-us/azure/foundry/how-to/configure-private-link)
-
----
-Copyright © 2026 MD ABUL HOSSAIN. All Rights Reserved.
+# License & Citation 
+​Copyright © 2026 MD ABUL HOSSAIN. All Rights Reserved.
+Distributed under the MIT License. See [LICENSE](license.md) for details.
