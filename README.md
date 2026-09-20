@@ -17,31 +17,37 @@
 
 An AI agent is an engineered loop, not just a smart model. `hamdGAI` implements a modular agent framework paired with hardware-accelerated compute capabilities.
 
-### AI Reference Architecture:
+# hamdGAI: Hybrid Agent Model & ROCm Compute Architecture
 
-1. **Model** – Interprets objectives and proposes actions.
-2. **Instructions** – Role boundaries, operational policies, and stopping criteria.
-3. **Tools** – Validated, least-privilege capabilities executed safely by the runtime.
-4. **State & Memory** – Active execution state with grounded retrieval memory.
-5. **Control Loop** – Observe → Decide → Act → Update → (Continue | Escalate | Stop).
+Production-grade agent orchestration framework with integrated retrieval-augmented generation (RAG) and AMD ROCm PyTorch compute acceleration.
 
----
+## Core Capabilities
 
-## Quick Start
+- **ROCm Compute Acceleration:** Native tensor operations (GEMM, FFT, Cholesky) optimized for AMD GPU hardware with automatic CPU execution fallbacks.
+- **Grounded RAG Pipeline:** Term-frequency cosine similarity passage retrieval engine returning structured answers with confidence metrics.
+- **Enterprise Configuration:** Typed Pydantic Settings management and structured JSON log streaming via `structlog`.
+- **Infrastructure as Code:** Pinned Terraform modules for agent cluster provisioning.
 
-### Installation
+## Environment Variables
 
-Ensure Python 3.11+ is installed, then clone and setup the environment using pinned dependencies:
+| Variable Name | Description | Default / Example |
+| :--- | :--- | :--- |
+| `AGENT_MAX_STEPS` | Maximum recursive execution loop steps for agents | `10` |
+| `ROCM_API_KEY` | Authentication key for ROCm service bindings | `rocm_sec_key_123` |
+| `PROMETHEUS_PORT` | Port exposed for operational metrics collection | `9090` |
+| `AI_SEARCH_CONN_ID` | Azure AI Search Connection Identifier | `search_conn_01` |
+| `AZURE_SUBSCRIPTION_ID` | Azure Subscription GUID for deployment scripts | `00000000-0000-0000-0000-000000000000` |
 
+## Quickstart Guide
+
+### 1. Installation
+
+Ensure Python 3.11+ is installed, then clone and install pinned dependencies:
 ```bash
-git clone [https://github.com/AnticipatedD/hamdGAI.git](https://github.com/AnticipatedD/hamdGAI.git)
-cd hamdGAI
 python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements-lock.txt
-cp .env.example .env
 ```
-
 # Execution & Testing 
 ```bash
 # Run unit test suite (with CPU fallback validation)
@@ -50,72 +56,21 @@ pytest
 # Smoke test the core agent runtime loop
 python hamdGAI_init.py
 ```
+Running Unit Tests
+​Run the complete test suite (includes CPU fallback tests for GPU acceleration routines):
+```bash
+pytest tests/ -v --cov=.
+```
 ### Core System Features & Architecture 
+
 # Key Design Principles
+
 - **Explicit Tool Contracts**: Typed input validation, structured exception handling, and full execution provenance.
 - **​Controlled Execution Budgets**: Strict step budgets, error thresholds, and escalation pathways.
 - ​**Grounded Decision Making**: Clear separation of verified facts from model-generated summaries via RAG pipelines.
 - **​Hardware Acceleration**: AMD ROCm GPU PyTorch kernels with seamless CPU fallback capabilities.
 
-  """Environment Configuration Schema for hamdGAI Runtime."""
-
-from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
-class Settings(BaseSettings):
-    """Configuration settings mapped to environment variables."""
-
-    # -------------------------------------------------------------------------
-    # AGENT RUNTIME CONFIGURATION
-    # -------------------------------------------------------------------------
-    agent_max_steps: int = Field(
-        default=10,
-        alias="AGENT_MAX_STEPS",
-        description="Maximum allowed iteration steps per agent execution run",
-    )
-
-    # -------------------------------------------------------------------------
-    # ROCM COMPUTE ACCELERATION CONFIGURATION
-    # -------------------------------------------------------------------------
-    rocm_api_key: str = Field(
-        default="rocm_sec_key_123",
-        alias="ROCM_API_KEY",
-        description="Authentication key for binding AMD ROCm acceleration services",
-    )
-
-    # -------------------------------------------------------------------------
-    # TELEMETRY & MONITORING CONFIGURATION
-    # -------------------------------------------------------------------------
-    prometheus_port: int = Field(
-        default=9090,
-        alias="PROMETHEUS_PORT",
-        description="Exposed port for metric tracking and operational monitoring",
-    )
-
-    # -------------------------------------------------------------------------
-    # VECTOR SEARCH & AZURE AI FOUNDRY INTEGRATION
-    # -------------------------------------------------------------------------
-    ai_search_conn_id: str = Field(
-        default="search_conn_01",
-        alias="AI_SEARCH_CONN_ID",
-        description="Connection identifier for vector retrieval services",
-    )
-    azure_subscription_id: str = Field(
-        default="00000000-0000-0000-0000-000000000000",
-        alias="AZURE_SUBSCRIPTION_ID",
-        description="Target cloud deployment subscription identifier",
-    )
-
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
-
-
-# Instantiate global settings object for import across modules
-settings = Settings()
+---
 
 # Repository Structure 
 hamdGAI/
