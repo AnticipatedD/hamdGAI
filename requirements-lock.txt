@@ -1,4 +1,4 @@
-torch==2.3.1
+torch==2.14.0
 pydantic==2.6.4
 pydantic-settings==2.2.1
 structlog==24.1.0
