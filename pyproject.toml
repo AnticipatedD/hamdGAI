@@ -20,7 +20,8 @@ dependencies = [
     "openai>=1.58.1",
     "python-dotenv>=1.0.1",
     "anyio>=4.4.0",
-    "httpx>=0.27.0"
+    "httpx>=0.27.0",
+    "jsonschema>=4.22.0",
 ]
 
 [project.optional-dependencies]
@@ -31,8 +32,24 @@ dev = [
     "mypy>=1.10.1",
     "black>=24.4.2",
     "flake8>=7.0.0",
-    "pip-audit>=2.7.3"
+    "pip-audit>=2.7.3",
 ]
+
+[tool.setuptools]
+py-modules = [
+    "config",
+    "errors",
+    "hamdGAI_init",
+    "rag_pipeline",
+    "rocm_primitives_demo",
+    "deploy_toolbox",
+    "rocm_engine",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = []          # we are using py-modules only
+exclude = ["tests*", "terraform*", "nginx*", "skill*", "metrics*", "microsoft*", "docs*"]
 
 [tool.ruff]
 line-length = 100
