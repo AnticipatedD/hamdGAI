@@ -9,7 +9,7 @@ description = "Hybrid Agent Model & ROCm Accelerated Compute Engine"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
-    { name = "MD ABUL HOSSAIN", email = "bigboss@anticipatedd.io" }
+    { name = "MD ABUL HOSSAIN", email = "harigov63@gmail.com"}
 ]
 dependencies = [
     "pydantic>=2.8.2",
