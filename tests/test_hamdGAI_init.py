@@ -1,13 +1,25 @@
+"""Tests for rocm_primitives_demo (CPU / offline safe)."""
+
+from __future__ import annotations
+
 import pytest
-from config import Settings
-from rag_pipeline import RAGPipeline
+import torch
 
-def test_settings_initialization():
-    settings = Settings(rocm_api_key="test_key", azure_subscription_id="00000000-0000-0000-0000-000000000000", max_steps=5, top_k=3)
-    assert settings.max_steps == 5
-    assert settings.top_k == 3
+from rocm_primitives_demo import check_rocm_environment
 
-def test_rag_grounded_answer():
-    rag = RAGPipeline()
-    answer = rag.grounded_answer("How to optimize ROCm?", ["passage1", "passage2"])
-    assert "passage" in answer
+
+def test_check_rocm_environment_raises_when_no_device(monkeypatch):
+    """Must raise RuntimeError when no CUDA/ROCm device is present."""
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+    with pytest.raises(RuntimeError, match="ROCm/CUDA device unavailable"):
+        check_rocm_environment()
+
+
+def test_check_rocm_environment_returns_device(monkeypatch):
+    """When a device is reported available, return a cuda device object."""
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(torch.cuda, "get_device_name", lambda device: "Mock GPU")
+    # torch.version.cuda / hip may be None in pure CPU builds; that is fine
+    device = check_rocm_environment()
+    assert isinstance(device, torch.device)
+    assert device.type == "cuda"
