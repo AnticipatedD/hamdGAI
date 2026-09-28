@@ -13,6 +13,9 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import structlog
+
+logger = structlog.get_logger()
 
 
 def check_rocm_environment() -> torch.device:
@@ -23,8 +26,9 @@ def check_rocm_environment() -> torch.device:
             "Ensure ROCm drivers and a PyTorch ROCm build are installed."
         )
     device = torch.device("cuda:0")
-    print(f"[+] Device Name: {torch.cuda.get_device_name(device)}")
-    print(f"[+] ROCm / CUDA Version: {torch.version.cuda or getattr(torch.version, 'hip', None)}")
+    logger.info("device_info",
+                name=torch.cuda.get_device_name(device),
+                version=torch.version.cuda or getattr(torch.version, "hip", None))
     return device
 
 
@@ -105,22 +109,22 @@ def demo_rocsolver_decompositions(
 
 
 if __name__ == "__main__":
-    print("Initializing ROCm High-Performance Compute Library Test Suite...")
+    logger.info("init_suite", message="Initializing ROCm High-Performance Compute Library Test Suite")
     gpu_device = check_rocm_environment()
 
     gemm_out = demo_rocblas_gemm(gpu_device)
-    print(f"[✓] GEMM + GELU shape: {gemm_out.shape}, dtype: {gemm_out.dtype}")
+    logger.info("gemm_result", shape=str(gemm_out.shape), dtype=str(gemm_out.dtype))
 
     latency = demo_miopen_primitives(gpu_device)
-    print(f"[✓] MIOpen Conv2D 100-iter avg latency: {latency:.3f} ms")
+    logger.info("miopen_latency", avg_ms=latency)
 
     spectrum, max_err = demo_rocfft(gpu_device)
-    print(f"[✓] FFT spectrum shape: {spectrum.shape}")
-    print(f"[✓] Reconstruction max abs error: {max_err:.6e}")
+    logger.info("fft_result", spectrum_shape=str(spectrum.shape), max_error=max_err)
 
     chol_diff, top5, qr_diff = demo_rocsolver_decompositions(gpu_device)
-    print(f"[✓] Cholesky residual: {chol_diff:.6e}")
-    print(f"[✓] Top-5 singular values: {top5.numpy()}")
-    print(f"[✓] QR residual: {qr_diff:.6e}")
+    logger.info("decomposition_result",
+                cholesky_residual=chol_diff,
+                top5_singular_values=top5.numpy().tolist(),
+                qr_residual=qr_diff)
 
-    print("\n[+] All ROCm compute library pipelines executed successfully.")
+    logger.info("suite_complete", message="All ROCm compute library pipelines executed successfully")
