@@ -9,7 +9,16 @@
 [![Cursor](https://img.shields.io/badge/Cursor-Compatible-000000?logo=cursor&logoColor=white)](https://cursor.com)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Compatible-F07535?logo=claude&logoColor=white)](https://www.anthropic.com/claude-code)
 
-</div>
+</div> 
+
+## Features at a Glance
+
+- 🔒 **Reproducible Installs**: Pinned `requirements-lock.txt` ensures deterministic dependency management.
+- 🧪 **Expanded Test Coverage**: Unit tests now cover config, errors, metrics exporter, and ROCm demo functions.
+- 🌐 **Health Monitoring**: `/health` endpoint provides JSON status, uptime, and version for observability.
+- 📊 **Structured Logging**: All modules use `structlog` for consistent, machine‑readable logs.
+- 📓 **Experiment Reproducibility**: Notebook + run script demonstrate reproducible runs with fixed seeds and configs.
+- ⚙️ **CI/CD Integration**: GitHub Actions pipeline runs lint, type checks, security audit, and full test suite.
 
 ## How AI Agents Work – Model, Tools, Memory & Control Loop
 
