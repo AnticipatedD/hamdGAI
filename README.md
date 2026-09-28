@@ -39,28 +39,34 @@ Production-grade agent orchestration framework with integrated retrieval-augment
 | `AZURE_SUBSCRIPTION_ID` | Azure Subscription GUID for deployment scripts | `00000000-0000-0000-0000-000000000000` |
 
 ## Quickstart Guide
+# Execution & Testing
 
 ### 1. Installation
-
 Ensure Python 3.11+ is installed, then clone and install pinned dependencies:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-lock.txt
 ```
-# Execution & Testing 
-```bash
-# Run unit test suite (with CPU fallback validation)
-pytest
-
-# Smoke test the core agent runtime loop
+### 2. Running Tests
+Run the complete test suite (includes CPU fallback tests for GPU acceleration routines):
+`bash
+pytest tests/ -v --cov=. --cov-fail-under=60
+`
+### 3. Smoke Test
+Run the core agent runtime loop:
+`bash
 python hamdGAI_init.py
-```
-Running Unit Tests
-​Run the complete test suite (includes CPU fallback tests for GPU acceleration routines):
-```bash
-pytest tests/ -v --cov=.
-```
+`
+### 4. Health Check
+Start the FastAPI app and query the health endpoint:
+`bash
+uvicorn health:app --reload
+curl http://localhost:8000/health
+` 
+
+---
+
 ### Core System Features & Architecture 
 
 # Key Design Principles
@@ -69,28 +75,44 @@ pytest tests/ -v --cov=.
 - **​Controlled Execution Budgets**: Strict step budgets, error thresholds, and escalation pathways.
 - ​**Grounded Decision Making**: Clear separation of verified facts from model-generated summaries via RAG pipelines.
 - **​Hardware Acceleration**: AMD ROCm GPU PyTorch kernels with seamless CPU fallback capabilities.
+- **Structured Logging**: All modules use structlog for consistent observability.
 
 ---
 
 # Repository Structure 
+
 hamdGAI/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml             # Integrated lint, terraform, and pytest pipeline
 ├── terraform/
 │   └── main.tf                # Agent cluster IaC modules
+├── notebooks/
+│   └── demo_reproducibility.ipynb # Reproducibility demo notebook
+├── scripts/
+│   └── run_experiment.sh      # Script for reproducible runs
 ├── tests/
 │   ├── test_rag_pipeline.py   # RAG retrieval and vector matching tests
 │   ├── test_rocm_engine_cpu.py# ROCm compute engine CPU fallback unit tests
-│   └── test_toolbox.py        # Mocked Azure AI Project client integration tests
+│   ├── test_rocm_engine.py    # ROCm compute engine GPU logic tests
+│   ├── test_rocm_primitives_demo.py # GEMM, FFT, Conv, decomposition demo tests
+│   ├── test_config.py         # Settings validation tests
+│   ├── test_errors.py         # Custom exception hierarchy tests
+│   └── test_metrics_exporter.py # Prometheus metrics tests
 ├── config.py                  # Pydantic Settings schema
+├── errors.py                  # Custom error classes
+├── metrics_exporter.py        # Prometheus telemetry collector
 ├── hamdGAI_init.py            # Main entry point & control loop
 ├── rag_pipeline.py            # Grounded in-memory vector search pipeline
 ├── rocm_engine.py             # ROCm tensor compute suite (GEMM, FFT, Cholesky)
+├── rocm_primitives_demo.py    # ROCm compute demo with structured logging
+├── health.py                  # FastAPI health endpoint
 ├── .env.example               # Environment variable templates
 ├── pyproject.toml             # Project build configuration
 └── requirements-lock.txt      # Pinned dependency lockfile
 
+---
+
 # License & Citation 
-​Copyright © 2026 MD ABUL HOSSAIN. All Rights Reserved.
-Distributed under the MIT License. See [LICENSE](license.md) for details.
+Copyright © 2026 MD ABUL HOSSAIN. All Rights Reserved.  
+Distributed under the MIT License. See [Looks like the result wasn't safe to show. Let's switch things up and try something else!] for details.
