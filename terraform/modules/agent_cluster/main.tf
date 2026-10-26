@@ -1,1 +1,5 @@
-resource "null_resource" "cluster" {}
+resource "terraform_data" "cluster" {
+  input = {
+    cluster_name = var.cluster_name
+  }
+}
