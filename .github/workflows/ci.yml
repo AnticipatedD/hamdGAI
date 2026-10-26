@@ -49,12 +49,13 @@ jobs:
         with:
           terraform_version: 1.6.0
 
-      - name: Validate Infrastructure Syntax
+      - name: Validate Infrastructure Syntax & Plan
         run: |
           cd terraform
           terraform init -backend=false
           terraform fmt -check
           terraform validate
+          terraform plan -no-color
 
       - name: Run tfsec Security Policy Scanner
         uses: aquasecurity/tfsec-action@v1.0.3
