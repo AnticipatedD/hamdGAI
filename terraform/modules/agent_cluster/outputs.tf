@@ -1,3 +1,4 @@
 output "cluster_id" {
-  value = null_resource.cluster.id
+  value       = terraform_data.cluster.id
+  description = "ID of the agent cluster resource"
 }
