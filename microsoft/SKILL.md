@@ -6,7 +6,8 @@ Pre-Execution Requirements
 Follow each applicable subsection below before starting its corresponding action or workflow.
 Dependency Check and Setup
 
-### MANDATORY: As the first step after this skill loads, run the dependency check and setup script below from this skill's root and wait for it to finish before continuing. The script checks first and installs only missing dependencies; it does not reinstall dependencies that are already available.
+### MANDATORY: 
+As the first step after this skill loads, run the dependency check and setup script below from this skill's root and wait for it to finish before continuing. The script checks first and installs only missing dependencies; it does not reinstall dependencies that are already available.
 
 You MUST complete this check before reading or entering any sub-skill, workflow, or workflow-specific reference.
 ```
@@ -16,13 +17,16 @@ You MUST complete this check before reading or entering any sub-skill, workflow,
 Strictly follow the script output for subsequent actions.
 Workflow Guidance
 
-### MANDATORY: Before executing ANY workflow-specific steps, you MUST read the corresponding sub-skill document. Do not call workflow-specific MCP tools for a workflow without reading its skill document. This applies even if you already know the MCP tool parameters — the skill document contains required workflow steps, pre-checks, and validation logic that must be followed. This rule applies on every new user message that triggers a different workflow, even if the skill is already loaded.
+### MANDATORY: 
+Before executing ANY workflow-specific steps, you MUST read the corresponding sub-skill document. Do not call workflow-specific MCP tools for a workflow without reading its skill document. This applies even if you already know the MCP tool parameters — the skill document contains required workflow steps, pre-checks, and validation logic that must be followed. This rule applies on every new user message that triggers a different workflow, even if the skill is already loaded.
 `Foundry MCP`
 
-### MANDATORY: Before using Foundry MCP operations, call the Azure MCP foundry tool and inspect the available Foundry MCP tools and related parameters. Treat this as the discovery/help step for MCP-based workflows.
+### MANDATORY: 
+Before using Foundry MCP operations, call the Azure MCP foundry tool and inspect the available Foundry MCP tools and related parameters. Treat this as the discovery/help step for MCP-based workflows.
 `azd`
 
-### MANDATORY: Before executing ANY azd command, you MUST read azd-guidance and strictly follow the shared rules defined in it, especially the AZURE_DEV_USER_AGENT setting rules.
+### MANDATORY: 
+Before executing ANY azd command, you MUST read azd-guidance and strictly follow the shared rules defined in it, especially the AZURE_DEV_USER_AGENT setting rules.
 
 ### Sub-Skills
 
@@ -31,7 +35,8 @@ This skill includes specialized sub-skills for specific workflows. **When a sub-
 ---
 
 # 1. Storing the entire comprehensive dataset as a Python multi-line raw string
-COMPLETE_SKILLS_MARKDOWN = """### Sub-Skills
+COMPLETE_SKILLS_MARKDOWN = """
+### Sub-Skills
 
 This skill includes specialized sub-skills for specific workflows. **When a sub-skill matches the task, strictly follow its workflow:**
 
@@ -83,18 +88,19 @@ if __name__ == "__main__":
     overwrite_skill_file()
 
 ---
-    💡 *Tip: For a complete onboarding flow: project/create (public) or private-network (VNet isolation) → models/deploy-model → agent workflows (create → deploy → invoke).*
+💡 *Tip: For a complete onboarding flow: project/create (public) or private-network (VNet isolation) → models/deploy-model → agent workflows (create → deploy → invoke).*
 
-    💡 *Fine-Tuning: Use finetuning for all model customization — SFT distillation, DPO preference optimization, and RFT with graders. Includes quickstart, grader calibration, and training curve analysis.*
+💡 *Fine-Tuning: Use finetuning for all model customization — SFT distillation, DPO preference optimization, and RFT with graders. Includes quickstart, grader calibration, and training curve analysis.*
 
-    💡 *Model Deployment: Use models/deploy-model for all deployment scenarios — it intelligently routes between quick preset deployment, customized deployment with full control, and capacity discovery across regions.*
+💡 *Model Deployment: Use models/deploy-model for all deployment scenarios — it intelligently routes between quick preset deployment, customized deployment with full control, and capacity discovery across regions.*
 
-    💡 *Prompt Optimization: For requests like "optimize my prompt" or "improve my agent instructions," load observe and use the prompt_optimize MCP tool through that eval-driven workflow.*
+💡 *Prompt Optimization: For requests like "optimize my prompt" or "improve my agent instructions," load observe and use the prompt_optimize MCP tool through that eval-driven workflow.*
 
 ---
 
 # 1. Storing the text and Markdown tables as a clean multi-line string
-LIFECYCLES_MARKDOWN = """### Infrastructure Lifecycle
+LIFECYCLES_MARKDOWN = """
+### Infrastructure Lifecycle
 
 Match user intent to the correct infrastructure workflow.
 
