@@ -11,6 +11,8 @@
 
 </div> 
 
+[!DataFactor Live Score](hamdGAI_DataFactor_scores.jpg)
+
 ## Features at a Glance
 
 - 🔒 **Reproducible Installs**: Pinned `requirements-lock.txt` ensures deterministic dependency management.
