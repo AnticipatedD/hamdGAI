@@ -35,8 +35,6 @@ This skill includes specialized sub-skills for specific workflows. **When a sub-
 ---
 
 # 1. Storing the entire comprehensive dataset as a Python multi-line raw string
-COMPLETE_SKILLS_MARKDOWN = """
-### Sub-Skills
 
 This skill includes specialized sub-skills for specific workflows. **When a sub-skill matches the task, strictly follow its workflow:**
 
@@ -64,8 +62,8 @@ This skill includes specialized sub-skills for specific workflows. **When a sub-
 | **rbac** | Managing RBAC permissions, role assignments, managed identities, and service principals for Microsoft Foundry resources. Use for access control, auditing permissions, and CI/CD setup. | `rbac/rbac.md` |
 | **finetuning** | Fine-tune models on Microsoft Foundry — SFT distillation, DPO preference optimization, RFT with graders and tool calling. Dataset preparation, grader calibration, training, checkpoint selection, deployment, evaluation. Use for: fine-tune, SFT, DPO, RFT, training data, grader, distillation, fine-tuned model, large file upload. | `finetuning/SKILL.md` |
 | **azd-guidance** | Provide shared azd knowledge and guidance for managing Foundry agents. Read this first for any workflows related to azd. | `azd-guidance` |
-"""
 
+```python
 def display_table():
     """Prints the raw markdown layout directly to your python logging output or console."""
     print(COMPLETE_SKILLS_MARKDOWN)
@@ -86,8 +84,9 @@ if __name__ == "__main__":
     
     # Run the file generator function
     overwrite_skill_file()
+```
+--- 
 
----
 💡 *Tip: For a complete onboarding flow: project/create (public) or private-network (VNet isolation) → models/deploy-model → agent workflows (create → deploy → invoke).*
 
 💡 *Fine-Tuning: Use finetuning for all model customization — SFT distillation, DPO preference optimization, and RFT with graders. Includes quickstart, grader calibration, and training curve analysis.*
@@ -98,9 +97,7 @@ if __name__ == "__main__":
 
 ---
 
-# 1. Storing the text and Markdown tables as a clean multi-line string
-LIFECYCLES_MARKDOWN = """
-### Infrastructure Lifecycle
+1. Storing the text and Markdown tables as a clean multi-line string
 
 Match user intent to the correct infrastructure workflow.
 
@@ -113,7 +110,7 @@ Match user intent to the correct infrastructure workflow.
 
 ---
 
-### Agent Development Lifecycle
+# Agent Development Lifecycle
 
 Match user intent to the correct agent workflow. Read each sub-skill in order before executing.
 
@@ -133,8 +130,8 @@ Match user intent to the correct agent workflow. Read each sub-skill in order be
 | **Pull agent insights / list generated issues and recommendations** | dependency check and setup → `insights` (all pages with expanded evidence; read-only) |
 | **Troubleshoot an agent issue** | dependency check and setup → `azd-guidance` → `invoke` → `troubleshoot` |
 | **Fix a broken agent (troubleshoot + redeploy)** | dependency check and setup → `azd-guidance` → `invoke` → `troubleshoot` → apply fixes → `deploy` → `invoke` |
-"""
 
+```python
 def print_tables():
     """Prints the raw markdown layouts directly to your console."""
     print(LIFECYCLES_MARKDOWN)
@@ -156,3 +153,6 @@ if __name__ == "__main__":
     
     # Run the file update logic
     append_to_skill_file()
+```
+---
+Copyright © 2026 MD ABUL HOSSAIN. All Rights Reserved.
