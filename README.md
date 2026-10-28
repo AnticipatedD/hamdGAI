@@ -11,7 +11,7 @@
 
 </div> 
 
-[!DataFactor Live Score](hamdGAI_DataFactor_scores.jpg)
+![DataFactor Scores](hamdGAI_DataFactor_scores.jpg)
 
 ## Features at a Glance
 
