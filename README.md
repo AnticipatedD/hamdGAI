@@ -19,7 +19,6 @@
 - 🧪 **Expanded Test Coverage**: Unit tests now cover config, errors, metrics exporter, and ROCm demo functions.
 - 🌐 **Health Monitoring**: `/health` endpoint provides JSON status, uptime, and version for observability.
 - 📊 **Structured Logging**: All modules use `structlog` for consistent, machine‑readable logs.
-- 📓 **Experiment Reproducibility**: Notebook + run script demonstrate reproducible runs with fixed seeds and configs.
 - ⚙️ **CI/CD Integration**: GitHub Actions pipeline runs lint, type checks, security audit, and full test suite.
 
 ## How AI Agents Work – Model, Tools, Memory & Control Loop
@@ -98,10 +97,6 @@ hamdGAI/
 │       └── ci.yml             # Integrated lint, terraform, and pytest pipeline
 ├── terraform/
 │   └── main.tf                # Agent cluster IaC modules
-├── notebooks/
-│   └── demo_reproducibility.ipynb # Reproducibility demo notebook
-├── scripts/
-│   └── run_experiment.sh      # Script for reproducible runs
 ├── tests/
 │   ├── test_rag_pipeline.py   # RAG retrieval and vector matching tests
 │   ├── test_rocm_engine_cpu.py# ROCm compute engine CPU fallback unit tests
