@@ -1,42 +1,90 @@
 # hamdGAI
 
 <div align="center">
-  
-![AMD](https://img.shields.io/badge/AMD-Skills-ED1C24?logo=amd&logoColor=white)
-![ROCm](https://img.shields.io/badge/ROCm-Enabled-green)
-![Ryzen AI](https://img.shields.io/badge/Ryzen_AI-Ready-1F6FEB)
-![Agent Skills](https://img.shields.io/badge/Agent_Skills-Standard-7B2D8E)
-[![Cursor](https://img.shields.io/badge/Cursor-Compatible-000000?logo=cursor&logoColor=white)](https://cursor.com)
-[![Claude Code](https://img.shields.io/badge/Claude_Code-Compatible-F07535?logo=claude&logoColor=white)](https://www.anthropic.com/claude-code)
 
-</div> 
+# Hybrid Agent Intelligence & AMD Compute Architecture
 
-![DataFactor Scores](hamdGAI_DataFactor_scores.jpg)
+**An extensible AI agent framework integrating intelligent execution, grounded retrieval, AMD ROCm acceleration, and enterprise-oriented observability.**
 
-## Features at a Glance
+<br/>
 
-- 🔒 **Reproducible Installs**: Pinned `requirements-lock.txt` ensures deterministic dependency management.
-- 🧪 **Expanded Test Coverage**: Unit tests now cover config, errors, metrics exporter, and ROCm demo functions.
-- 🌐 **Health Monitoring**: `/health` endpoint provides JSON status, uptime, and version for observability.
-- 📊 **Structured Logging**: All modules use `structlog` for consistent, machine‑readable logs.
-- ⚙️ **CI/CD Integration**: GitHub Actions pipeline runs lint, type checks, security audit, and full test suite.
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![AMD](https://img.shields.io/badge/AMD-ROCm-ED1C24?logo=amd&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-Compute-EE4C2C?logo=pytorch&logoColor=white)
+![RAG](https://img.shields.io/badge/AI-Grounded_RAG-6A5ACD)
+![Observability](https://img.shields.io/badge/Observability-Prometheus-E6522C?logo=prometheus&logoColor=white)
+![Infrastructure](https://img.shields.io/badge/IaC-Terraform-844FBA?logo=terraform&logoColor=white)
+![Testing](https://img.shields.io/badge/Testing-Pytest-0A9EDC?logo=pytest&logoColor=white)
 
-## How AI Agents Work – Model, Tools, Memory & Control Loop
+**Designed for modularity. Built for verifiable engineering.**
 
-![How hamdGAI agents work](how-hamdGAI-agents-work-1920x1080-1.jpg.webp)
+</div>
 
-An AI agent is an engineered loop, not just a smart model. `hamdGAI` implements a modular agent framework paired with hardware-accelerated compute capabilities.
+---
 
-# hamdGAI: Hybrid Agent Model & ROCm Compute Architecture
+## 🚀 Project Overview
 
-Production-grade agent orchestration framework with integrated retrieval-augmented generation (RAG) and AMD ROCm PyTorch compute acceleration.
+**hamdGAI** is a modular AI agent and compute framework designed to bring together controlled agent execution, retrieval-augmented generation (RAG), AMD GPU computation, and operational monitoring.
 
-## Core Capabilities
+The architecture combines Python-based orchestration with PyTorch compute operations, structured configuration, retrieval pipelines, and infrastructure automation.
 
-- **ROCm Compute Acceleration:** Native tensor operations (GEMM, FFT, Cholesky) optimized for AMD GPU hardware with automatic CPU execution fallbacks.
-- **Grounded RAG Pipeline:** Term-frequency cosine similarity passage retrieval engine returning structured answers with confidence metrics.
-- **Enterprise Configuration:** Typed Pydantic Settings management and structured JSON log streaming via `structlog`.
-- **Infrastructure as Code:** Pinned Terraform modules for agent cluster provisioning.
+Its engineering direction is to provide a foundation for dependable AI systems that can be extended, tested, monitored, and deployed across suitable computing environments.
+
+## 🧠 Core Technology Domains
+
+| Technology Domain | Implementation |
+|---|---|
+| Agent Orchestration | Modular agent control loop and execution management |
+| Retrieval-Augmented Generation | Grounded passage retrieval and similarity matching |
+| AMD Compute | ROCm-oriented PyTorch tensor operations |
+| Compute Primitives | GEMM, FFT, Cholesky and related demonstrations |
+| Configuration | Pydantic settings and environment-based configuration |
+| Observability | Structured logging and Prometheus metrics |
+| Infrastructure | Terraform-based infrastructure definitions |
+| Quality Engineering | Pytest, coverage and automated CI checks |
+
+## 🏛️ High-Level Architecture
+
+```mermaid
+flowchart TB
+    A["AI Application / User Request"]
+    B["hamdGAI Agent Control Loop"]
+    C["Configuration & Execution Controls"]
+    D["RAG Retrieval Pipeline"]
+    E["ROCm Compute Engine"]
+    F["PyTorch Tensor Operations"]
+    G["CPU Fallback"]
+    H["Logging & Prometheus Metrics"]
+    I["CI / Testing / Infrastructure"]
+
+    A --> B
+    B --> C
+    B --> D
+    B --> E
+    E --> F
+    E --> G
+    B --> H
+    I --> C
+    I --> D
+    I --> E
+```
+
+## 🎯 Engineering Vision
+
+The long-term objective is to evolve hamdGAI into a robust, extensible AI infrastructure platform with:
+
+- Controlled and observable agent execution.
+- Grounded information retrieval.
+- Hardware-aware AMD compute acceleration.
+- Reproducible and testable engineering workflows.
+- Secure configuration and infrastructure management.
+- Clear interfaces for future enterprise integrations.
+
+**Project Author:** MD ABUL HOSSAIN
+
+**Repository:** [AnticipatedD/hamdGAI](https://github.com/AnticipatedD/hamdGAI)
+
+---
 
 ## Environment Variables
 
@@ -89,33 +137,85 @@ curl http://localhost:8000/health
 
 ---
 
-# Repository Structure 
+ ## 🏗️ Repository Architecture
 
+hamdGAI is organized around modular AI execution, AMD ROCm compute, retrieval, observability, infrastructure automation, and automated testing.
+
+The structure below highlights the principal components and their responsibilities.
+
+### 📂 Project Structure
+
+```text
 hamdGAI/
+│
 ├── .github/
 │   └── workflows/
-│       └── ci.yml             # Integrated lint, terraform, and pytest pipeline
+│       └── ci.yml
+│
 ├── terraform/
-│   └── main.tf                # Agent cluster IaC modules
+│   └── main.tf
+│
 ├── tests/
-│   ├── test_rag_pipeline.py   # RAG retrieval and vector matching tests
-│   ├── test_rocm_engine_cpu.py# ROCm compute engine CPU fallback unit tests
-│   ├── test_rocm_engine.py    # ROCm compute engine GPU logic tests
-│   ├── test_rocm_primitives_demo.py # GEMM, FFT, Conv, decomposition demo tests
-│   ├── test_config.py         # Settings validation tests
-│   ├── test_errors.py         # Custom exception hierarchy tests
-│   └── test_metrics_exporter.py # Prometheus metrics tests
-├── config.py                  # Pydantic Settings schema
-├── errors.py                  # Custom error classes
-├── metrics_exporter.py        # Prometheus telemetry collector
-├── hamdGAI_init.py            # Main entry point & control loop
-├── rag_pipeline.py            # Grounded in-memory vector search pipeline
-├── rocm_engine.py             # ROCm tensor compute suite (GEMM, FFT, Cholesky)
-├── rocm_primitives_demo.py    # ROCm compute demo with structured logging
-├── health.py                  # FastAPI health endpoint
-├── .env.example               # Environment variable templates
-├── pyproject.toml             # Project build configuration
-└── requirements-lock.txt      # Pinned dependency lockfile
+│   ├── test_rag_pipeline.py
+│   ├── test_rocm_engine_cpu.py
+│   ├── test_rocm_engine.py
+│   ├── test_rocm_primitives_demo.py
+│   ├── test_config.py
+│   ├── test_errors.py
+│   └── test_metrics_exporter.py
+│
+├── config.py
+├── errors.py
+├── metrics_exporter.py
+├── hamdGAI_init.py
+├── rag_pipeline.py
+├── rocm_engine.py
+├── rocm_primitives_demo.py
+│
+├── health.py
+├── .env.example
+├── pyproject.toml
+└── requirements-lock.txt
+```
+
+### ⚙️ Core Architecture
+
+| Component | Responsibility |
+|---|---|
+| `hamdGAI_init.py` | Main application entry point and agent control loop |
+| `config.py` | Typed configuration and environment settings |
+| `errors.py` | Centralized application exception hierarchy |
+| `rag_pipeline.py` | Retrieval-augmented generation and vector matching |
+| `rocm_engine.py` | AMD ROCm tensor computation engine |
+| `rocm_primitives_demo.py` | GEMM, FFT, convolution and decomposition demonstrations |
+| `metrics_exporter.py` | Prometheus metrics and telemetry collection |
+| `health.py` | Application health monitoring |
+| `terraform/` | Infrastructure-as-code definitions |
+| `tests/` | Automated validation of application and compute components |
+| `.github/workflows/` | Continuous integration and quality-control automation |
+
+### 🧪 Engineering & Quality Assurance
+
+The project incorporates automated testing and continuous integration to support:
+
+- Application logic and configuration validation.
+- RAG retrieval and vector-matching verification.
+- ROCm compute execution and CPU fallback testing.
+- GPU-oriented computational primitive validation.
+- Prometheus telemetry testing.
+- Automated CI quality checks.
+
+### 🔒 Configuration & Reproducibility
+
+- `.env.example` — Environment configuration template.
+- `pyproject.toml` — Python project configuration and development tooling.
+- `requirements-lock.txt` — Pinned dependency versions for reproducible installation.
+
+### 🎯 Architectural Objective
+
+hamdGAI is designed to evolve into a modular, production-oriented AI infrastructure framework, combining intelligent agent execution, grounded retrieval, AMD GPU acceleration, observability, and infrastructure automation.
+
+**Engineering principle:** Every documented capability should correspond to real, maintained, and verifiable implementation in the repository.
 
 ---
 
